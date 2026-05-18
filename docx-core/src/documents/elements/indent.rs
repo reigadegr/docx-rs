@@ -12,7 +12,6 @@ pub struct Indent {
     pub end: Option<i32>,
     pub special_indent: Option<SpecialIndentType>,
     pub start_chars: Option<i32>,
-    // Internal, for reading
     pub hanging_chars: Option<i32>,
     pub first_line_chars: Option<i32>,
 }
@@ -29,7 +28,6 @@ impl Indent {
             start_chars,
             end,
             special_indent,
-            // Internal, for reading
             hanging_chars: None,
             first_line_chars: None,
         }
@@ -62,6 +60,8 @@ impl BuildXML for Indent {
                 self.special_indent,
                 self.end.unwrap_or_default(),
                 self.start_chars,
+                self.first_line_chars,
+                self.hanging_chars,
             )?
             .into_inner()
     }
@@ -72,7 +72,7 @@ impl Serialize for Indent {
     where
         S: Serializer,
     {
-        let mut t = serializer.serialize_struct("Indent", 3)?;
+        let mut t = serializer.serialize_struct("Indent", 6)?;
         t.serialize_field("start", &self.start)?;
         t.serialize_field("startChars", &self.start_chars)?;
         t.serialize_field("end", &self.end)?;
@@ -115,6 +115,50 @@ mod tests {
         assert_eq!(
             str::from_utf8(&b).unwrap(),
             r#"<w:ind w:left="20" w:right="0" w:hanging="50" />"#
+        );
+    }
+
+    #[test]
+    fn test_first_line_chars() {
+        let b = Indent::new(Some(0), Some(SpecialIndentType::FirstLine(0)), None, None)
+            .first_line_chars(200)
+            .build();
+        assert_eq!(
+            str::from_utf8(&b).unwrap(),
+            r#"<w:ind w:left="0" w:right="0" w:firstLine="0" w:firstLineChars="200" />"#
+        );
+    }
+
+    #[test]
+    fn test_hanging_chars() {
+        let b = Indent::new(Some(0), Some(SpecialIndentType::Hanging(0)), None, None)
+            .hanging_chars(200)
+            .build();
+        assert_eq!(
+            str::from_utf8(&b).unwrap(),
+            r#"<w:ind w:left="0" w:right="0" w:hanging="0" w:hangingChars="200" />"#
+        );
+    }
+
+    #[test]
+    fn test_first_line_chars_without_special_indent() {
+        let b = Indent::new(Some(0), None, None, None)
+            .first_line_chars(200)
+            .build();
+        assert_eq!(
+            str::from_utf8(&b).unwrap(),
+            r#"<w:ind w:left="0" w:right="0" w:firstLineChars="200" />"#
+        );
+    }
+
+    #[test]
+    fn test_hanging_chars_without_special_indent() {
+        let b = Indent::new(Some(0), None, None, None)
+            .hanging_chars(200)
+            .build();
+        assert_eq!(
+            str::from_utf8(&b).unwrap(),
+            r#"<w:ind w:left="0" w:right="0" w:hangingChars="200" />"#
         );
     }
 }

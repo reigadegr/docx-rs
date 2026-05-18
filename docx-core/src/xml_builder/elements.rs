@@ -248,12 +248,15 @@ impl<W: Write> XMLBuilder<W> {
     closed_with_str!(suffix, "w:suff");
 
     // i.e. <w:ind ... >
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn indent(
         self,
         start: Option<i32>,
         special_indent: Option<SpecialIndentType>,
         end: i32,
         start_chars: Option<i32>,
+        first_line_chars: Option<i32>,
+        hanging_chars: Option<i32>,
     ) -> Result<Self> {
         let start = &format!("{}", start.unwrap_or(0));
         let end = &format!("{}", end);
@@ -268,12 +271,28 @@ impl<W: Write> XMLBuilder<W> {
 
         match special_indent {
             Some(SpecialIndentType::FirstLine(v)) => {
-                self.write(base.attr("w:firstLine", &format!("{}", v)))
+                base = base.attr("w:firstLine", &format!("{}", v));
+                if let Some(chars) = first_line_chars {
+                    base = base.attr("w:firstLineChars", &format!("{}", chars));
+                }
+                self.write(base)
             }
             Some(SpecialIndentType::Hanging(v)) => {
-                self.write(base.attr("w:hanging", &format!("{}", v)))
+                base = base.attr("w:hanging", &format!("{}", v));
+                if let Some(chars) = hanging_chars {
+                    base = base.attr("w:hangingChars", &format!("{}", chars));
+                }
+                self.write(base)
             }
-            None => self.write(base),
+            None => {
+                if let Some(chars) = first_line_chars {
+                    base = base.attr("w:firstLineChars", &format!("{}", chars));
+                }
+                if let Some(chars) = hanging_chars {
+                    base = base.attr("w:hangingChars", &format!("{}", chars));
+                }
+                self.write(base)
+            }
         }?
         .close()
     }
