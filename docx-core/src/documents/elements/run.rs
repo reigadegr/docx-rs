@@ -380,7 +380,11 @@ impl BuildXML for RunChild {
             RunChild::FieldChar(c) => c.build_to(stream),
             RunChild::InstrText(c) => c.build_to(stream),
             RunChild::DeleteInstrText(c) => c.build_to(stream),
-            RunChild::InstrTextString(_) => unreachable!(),
+            RunChild::InstrTextString(s) => XMLBuilder::from(stream)
+                .open_instr_text()?
+                .plain_text(s)?
+                .close()?
+                .into_inner(),
             RunChild::FootnoteReference(c) => c.build_to(stream),
             RunChild::Shading(s) => s.build_to(stream),
         }

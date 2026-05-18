@@ -16,7 +16,7 @@ where
     zip.add_directory("docProps/", Default::default())?;
 
     let options = FileOptions::default()
-        .compression_method(zip::CompressionMethod::Stored)
+        .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o755);
 
     zip.start_file("[Content_Types].xml", options)?;

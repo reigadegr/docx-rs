@@ -513,6 +513,7 @@ impl<W: Write> XMLBuilder<W> {
     open!(open_wp_shape, "wps:wsp");
     open!(open_wp_text_box, "wps:txbx");
     open!(open_text_box_content, "w:txbxContent");
+    closed!(wps_body_pr, "wps:bodyPr");
 
     // compat
     open!(open_compat, "w:compat");
